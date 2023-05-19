@@ -1,0 +1,164 @@
+﻿@page "/"
+@using Domain.Dtos;
+@using Domain.Utilities;
+@using PasswordManager.Blazor.Enums;
+
+<PageTitle>Index</PageTitle>
+
+<div class="card mt-3 bg-light">
+    <div class="card-body">
+        <div class="card-title text-center">
+            <h3 class="text-primary">Password Generator</h3>
+            <p>Create secure passwords with our Password Generator</p>
+        </div>
+    </div>
+    <hr />
+
+    <div class="card-body bg-white">
+        <p class="h4">@password</p>
+    </div>
+    <hr />
+
+    <div class="card-body bg-light">
+        <div class="bg-success rounded passwordColorCheck"></div>
+    </div>
+
+</div>
+
+<div class="card mt-4 bg-white">
+    <div class="card-body bg-light">
+        <div class="card-title text-center">
+            <h3>Choose your password length</h3>
+        </div>
+
+        <div class="mt-2 text-center">
+            <div class="form-label">
+                Password Length <span class="badge bg-primary">@generatePasswordDto.Length</span>
+            </div> 
+
+            <input type="range" class="form-range" @bind="generatePasswordDto.Length" @oninput="OnInputChange" min="4" max="30" step="1" />
+        </div>
+    </div>
+
+    <div class="card-footer bg-white pt-3 pb-3">
+
+        <div class="d-flex flex-row justify-content-center">
+            <div class="inputLocate">
+                <label for="number">Numbers</label>
+                <input type="checkbox" class="form-check-input" @bind="generatePasswordDto.IncludeNumbers" @oninput="@((args) => CheckboxOnInput(args, GeneratePasswordType.Number))" name="numbers" /><!--Hiçbirini seçmese de bu ikisine göre başta şifre üretileceği belirtilmesi için checked işaretlendi (number ve lowercase)-->
+            </div>
+
+            <div class="inputLocate">
+                <label for="lowerCases">Lowercase Characters</label>
+                <input type="checkbox" class="form-check-input" @bind="generatePasswordDto.IncludeLowerCaseCharacters" @oninput="@((args) => CheckboxOnInput(args,GeneratePasswordType.Lowercase))" name="lowerCases" />
+            </div>
+
+            <div class="inputLocate">
+                <label for="upperCases">Uppercase Characters</label>
+                <input type="checkbox" class="form-check-input" @bind="generatePasswordDto.IncludeUpperrCaseCharacters" @oninput="@((args) => CheckboxOnInput(args,GeneratePasswordType.Uppercase))" name="upperCases" />
+            </div>
+
+            <div class="inputLocate">
+                <label for="specialChars">Special Characters</label>
+                <input type="checkbox" class="form-check-input" @bind="generatePasswordDto.IncludeSpecialCaseCharacters" @oninput="@((args) => CheckboxOnInput(args,GeneratePasswordType.SpecialChars))" name="specialChars" />
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(errorResponseMessage))
+{
+    <div class="alert alert-danger mt-3 text-center" role="alert">@errorResponseMessage</div>
+}
+
+
+@code
+{
+    GeneratePasswordDto generatePasswordDto = new();
+    string password = "";
+    PasswordGenerator passwordGenerator = new();
+    string errorResponseMessage;
+
+    private void OnInputChange(ChangeEventArgs args)
+    {
+        errorResponseMessage = "";
+
+        generatePasswordDto.Length = Convert.ToInt32(args.Value);
+
+        var isAllCheckBoxSelected = CheckAnyCheckboxSelected(generatePasswordDto);
+        if (!isAllCheckBoxSelected)
+            return;
+
+        password = passwordGenerator.Generate(generatePasswordDto);
+    }
+
+    private void CheckboxOnInput(ChangeEventArgs args, GeneratePasswordType type)
+    {
+        errorResponseMessage = "";
+
+        var isChecked = Convert.ToBoolean(args.Value);
+
+        switch (type)
+        {
+            case GeneratePasswordType.Number:
+                generatePasswordDto.IncludeNumbers = isChecked;
+                break;
+
+            case GeneratePasswordType.Lowercase:
+                generatePasswordDto.IncludeLowerCaseCharacters = isChecked;
+                break;
+
+            case GeneratePasswordType.Uppercase:
+                generatePasswordDto.IncludeUpperrCaseCharacters = isChecked;
+                break;
+
+            case GeneratePasswordType.SpecialChars:
+                generatePasswordDto.IncludeSpecialCaseCharacters = isChecked;
+                break;
+
+            default:
+                throw new Exception("Beklenmedik bir checkbox adı geldi.");
+        }
+
+        var isAllCheckBoxSelected = CheckAnyCheckboxSelected(generatePasswordDto);
+        if (!isAllCheckBoxSelected)
+            return;
+
+        password = passwordGenerator.Generate(generatePasswordDto);
+    }
+
+    protected override void OnInitialized()
+    {
+        generatePasswordDto.Length = 4;
+        password = passwordGenerator.Generate(generatePasswordDto);
+    }
+
+    private bool CheckAnyCheckboxSelected(GeneratePasswordDto generatePasswordDto)
+    {
+        if (!generatePasswordDto.IncludeNumbers && !generatePasswordDto.IncludeLowerCaseCharacters
+            && !generatePasswordDto.IncludeUpperrCaseCharacters && !generatePasswordDto.IncludeSpecialCaseCharacters)
+        {
+            errorResponseMessage = "Lütfen en az bir tane şifre oluşturma koşulu seçiniz.";
+            return false;
+        }
+        return true;
+    }
+}
+
+<style>
+
+    hr {
+        margin: 0;
+    }
+
+    .passwordColorCheck {
+        width: auto;
+        height: 30px;
+    }
+
+    .inputLocate {
+        margin-left: 20px;
+    }
+
+</style>
