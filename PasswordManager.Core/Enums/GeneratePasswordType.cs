@@ -1,4 +1,4 @@
-﻿namespace PasswordManager.Blazor.Enums
+﻿namespace PasswordManager.Core.Enums
 {
     public enum GeneratePasswordType
     {
