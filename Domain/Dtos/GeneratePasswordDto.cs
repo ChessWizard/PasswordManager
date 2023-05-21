@@ -12,7 +12,7 @@ namespace Domain.Dtos
 
         public bool IncludeLowerCaseCharacters { get; set; } = true;
 
-        public bool IncludeUpperrCaseCharacters { get; set; }
+        public bool IncludeUpperCaseCharacters { get; set; }
 
         public bool IncludeSpecialCaseCharacters { get; set; }
 

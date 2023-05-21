@@ -13,8 +13,7 @@
 
         <div class="card-header">
             <div class="card-title pt-2 text-center">
-                <h3 class="text-primary">Password Generator</h3>
-                <p>Create secure passwords with our Password Generator</p>
+                <div class="titleText h2">Create secure passwords </div>
             </div>
         </div>
 
@@ -26,7 +25,7 @@
 
                 <div class="col-md-1">
                     <!--Save icon-->
-                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-save icon-click" viewBox="0 0 16 16">
+                    <svg @onclick="AddPasswordToFavorites" xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="currentColor" class="bi bi-save icon-click" viewBox="0 0 16 16">
                         <path d="M2 1a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H9.5a1 1 0 0 0-1 1v7.293l2.646-2.647a.5.5 0 0 1 .708.708l-3.5 3.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L7.5 9.293V2a2 2 0 0 1 2-2H14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h2.5a.5.5 0 0 1 0 1H2z" />
                     </svg>
                 </div>
@@ -57,8 +56,8 @@
 
     <div class="card mt-4 bg-white">
         <div class="card-body bg-light">
-            <div class="card-title text-center">
-                <h3>Choose your password length</h3>
+            <div class="card-title text-center ">
+                <div class="titleText h2">Choose your password length</div>
             </div>
 
             <div class="mt-2 text-center">
@@ -85,7 +84,7 @@
 
                 <div class="inputLocate">
                     <label for="upperCases">Uppercase Characters</label>
-                    <input type="checkbox" class="form-check-input" @bind="generatePasswordDto.IncludeUpperrCaseCharacters" @oninput="@((args) => CheckboxOnInput(args,GeneratePasswordType.Uppercase))" name="upperCases" />
+                    <input type="checkbox" class="form-check-input" @bind="generatePasswordDto.IncludeUpperCaseCharacters" @oninput="@((args) => CheckboxOnInput(args,GeneratePasswordType.Uppercase))" name="upperCases" />
                 </div>
 
                 <div class="inputLocate">
@@ -96,7 +95,52 @@
 
         </div>
     </div>
-    @if (!string.IsNullOrEmpty(errorResponseMessage)){ <div class="alert alert-danger mt-3 text-center" role="alert">@errorResponseMessage</div> }
+    @if (!string.IsNullOrEmpty(errorResponseMessage))
+    {
+        <div class="alert alert-danger mt-3 text-center" role="alert">@errorResponseMessage</div>
+    }
+
+    <div class="card bg-light mt-4">
+        <div class="card-title pt-3 h2 text-center titleText">
+            Favorite Passwords
+        </div>
+        <div class="card-body bg-white">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th scope="col">#</th>
+                        <th scope="col">Password</th>
+                        <th scope="col">Security Level</th>
+                        <th scope="col">Creation Conditions</th>
+                    </tr>
+                </thead>
+                @{
+                    int count = 0;
+                }
+                @foreach (var detail in GetFavoritePasswordDetails())
+                {
+                    count++;
+
+                    var password = detail.Split(",")[0];
+                    var securityLevel = detail.Split(",")[1];
+                    var creationConditions = detail.Split(",")[2];
+
+                    <tr>
+                        <td>@count</td>
+                        <td>@password</td>
+                        <td><div class="alert @securityLevel mt-2 w-50" ></div></td>
+                        <td>@creationConditions</td>
+                    </tr>
+                }
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer">
+            <button type="button" class="btn btn-danger float-md-end">CLEAR</button>
+        </div>
+    </div>
+
 </div>
 
 @code
@@ -106,6 +150,7 @@
     PasswordGenerator passwordGenerator = new();
     string errorResponseMessage = "";
     string alertColor = PasswordSecurityMessage.LowLevelPassword;
+    List<string> favoritePasswords = new();
 
     private void OnInputChange(ChangeEventArgs args)
     {
@@ -146,7 +191,7 @@
         if (!isAllCheckBoxSelected)
             return;
 
-        password = passwordGenerator.Generate(generatePasswordDto);
+        GeneratePassword();
     }
 
     private ValueTask CopyPasswordToClipBoardAsync()
@@ -173,7 +218,7 @@
                 break;
 
             case GeneratePasswordType.Uppercase:
-                generatePasswordDto.IncludeUpperrCaseCharacters = isChecked;
+                generatePasswordDto.IncludeUpperCaseCharacters = isChecked;
                 break;
 
             case GeneratePasswordType.SpecialChars:
@@ -188,24 +233,50 @@
         if (!isAllCheckBoxSelected)
             return;
 
-        password = passwordGenerator.Generate(generatePasswordDto);
+        GeneratePassword();
     }
 
     protected override void OnInitialized()
     {
         generatePasswordDto.Length = PasswordSecurityLength.DefaultLevelPassword;
-        password = passwordGenerator.Generate(generatePasswordDto);
+        GeneratePassword();
     }
 
     private bool CheckAnyCheckboxSelected(GeneratePasswordDto generatePasswordDto)
     {
         if (!generatePasswordDto.IncludeNumbers && !generatePasswordDto.IncludeLowerCaseCharacters
-            && !generatePasswordDto.IncludeUpperrCaseCharacters && !generatePasswordDto.IncludeSpecialCaseCharacters)
+            && !generatePasswordDto.IncludeUpperCaseCharacters && !generatePasswordDto.IncludeSpecialCaseCharacters)
         {
             errorResponseMessage = "Lütfen en az bir tane şifre oluşturma koşulu seçiniz.";
             return false;
         }
         return true;
+    }
+
+    private void GeneratePassword()
+    {
+        password = passwordGenerator.Generate(generatePasswordDto);
+    }
+
+    private void AddPasswordToFavorites()
+    {
+        var passwordCreationConditions = passwordGenerator.GetPasswordCreationConditions(generatePasswordDto);
+
+        var passwordDetail = $"{password},{GetAlertColor(password.Length)},{passwordCreationConditions}";
+
+        if (favoritePasswords.Contains(passwordDetail))
+        {
+            _toastService.ShowError(ToasterResponseMessages.PasswordAlreadySaved);
+            return;
+        }
+        
+
+        favoritePasswords.Add(passwordDetail);
+    }
+
+    private List<string> GetFavoritePasswordDetails()
+    {
+        return favoritePasswords;
     }
 }
 
@@ -226,6 +297,13 @@
 
     .icon-click {
         cursor: pointer;
+    }
+
+    .titleText {
+        color: aquamarine;
+        font-weight: bolder;
+        -webkit-text-stroke: medium;
+        -webkit-text-stroke-color: black;
     }
 
 </style>

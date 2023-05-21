@@ -41,7 +41,7 @@ namespace Domain.Utilities
 
             if (generatePasswordDto.IncludeLowerCaseCharacters) { _charSetBuilder.Append(LowercaseCharacters); }
 
-            if (generatePasswordDto.IncludeUpperrCaseCharacters) { _charSetBuilder.Append(UppercaseCharacters); }
+            if (generatePasswordDto.IncludeUpperCaseCharacters) { _charSetBuilder.Append(UppercaseCharacters); }
 
             if (generatePasswordDto.IncludeSpecialCaseCharacters) { _charSetBuilder.Append(SpecialCharacters); }
 
@@ -88,7 +88,7 @@ namespace Domain.Utilities
                 }
             }
 
-            if (generatePasswordDto.IncludeUpperrCaseCharacters)
+            if (generatePasswordDto.IncludeUpperCaseCharacters)
             {
                 isValidPassword = ValidatePasswordByCharSet(password, UppercaseCharacters);
                 if (!isValidPassword)
@@ -125,6 +125,26 @@ namespace Domain.Utilities
                 }
             }
             return false;
+        }
+
+        /// <summary>
+        /// Yaratılan şifrenin yaratılma koşullarını döndürür
+        /// </summary>
+        /// <param name="generatePasswordDto"></param>
+        /// <returns></returns>
+        public string GetPasswordCreationConditions(GeneratePasswordDto generatePasswordDto)
+        {
+            List<string> conditions = new();
+
+            if (generatePasswordDto.IncludeLowerCaseCharacters) { conditions.Add("Küçük Harf"); }
+
+            if (generatePasswordDto.IncludeUpperCaseCharacters) { conditions.Add("Büyük Harf"); }
+
+            if (generatePasswordDto.IncludeNumbers) { conditions.Add("Sayı"); }
+
+            if (generatePasswordDto.IncludeSpecialCaseCharacters) { conditions.Add("Özel Karakter"); }
+
+            return String.Join(" | ", conditions);
         }
     }
 }
