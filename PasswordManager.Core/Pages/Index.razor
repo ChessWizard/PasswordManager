@@ -121,15 +121,16 @@
                 {
                     count++;
 
-                    var password = detail.Split(",")[0];
-                    var securityLevel = detail.Split(",")[1];
-                    var creationConditions = detail.Split(",")[2];
+                    var password = detail.Split(";")[0];
+                    var securityLevel = detail.Split(";")[1];
+                    var creationConditions = detail.Split(";")[2];
 
                     <tr>
                         <td>@count</td>
                         <td>@password</td>
-                        <td><div class="alert @securityLevel mt-2 w-50" ></div></td>
+                        <td><div class="alert @securityLevel mt-2 w-50"></div></td>
                         <td>@creationConditions</td>
+                        <td><button @onclick="() => DeleteFavoritePassword(detail)" type="button" class="btn btn-outline-danger text-center">X</button></td>
                     </tr>
                 }
                 <tbody>
@@ -137,7 +138,7 @@
             </table>
         </div>
         <div class="card-footer">
-            <button type="button" class="btn btn-danger float-md-end">CLEAR</button>
+            <button @onclick="DeleteAllFavoritePasswords" type="button" class="btn btn-danger float-md-end">CLEAR</button>
         </div>
     </div>
 
@@ -262,14 +263,15 @@
     {
         var passwordCreationConditions = passwordGenerator.GetPasswordCreationConditions(generatePasswordDto);
 
-        var passwordDetail = $"{password},{GetAlertColor(password.Length)},{passwordCreationConditions}";
+        var passwordDetail = $"{password};{GetAlertColor(password.Length)};{passwordCreationConditions}";
 
-        if (favoritePasswords.Contains(passwordDetail))
+        var passwords = favoritePasswords.Select(x => x.Split(";")[0]).ToList();
+
+        if (passwords.Contains(password))
         {
             _toastService.ShowError(ToasterResponseMessages.PasswordAlreadySaved);
             return;
         }
-        
 
         favoritePasswords.Add(passwordDetail);
     }
@@ -277,6 +279,24 @@
     private List<string> GetFavoritePasswordDetails()
     {
         return favoritePasswords;
+    }
+
+    private void DeleteFavoritePassword(string item)
+    {
+        _toastService.ShowSuccess(ToasterResponseMessages.FavoritePasswordDeleted);
+
+        favoritePasswords.Remove(item);
+    }
+
+    private void DeleteAllFavoritePasswords()
+    {
+        if (!favoritePasswords.Any())
+        {
+            _toastService.ShowWarning(ToasterResponseMessages.NotFoundFavoritePasswordForDelete);
+            return;
+        }
+
+        favoritePasswords.Clear();
     }
 }
 
