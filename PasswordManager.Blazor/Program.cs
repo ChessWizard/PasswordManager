@@ -2,7 +2,7 @@ using Blazored.LocalStorage;
 using Blazored.Toast;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using PasswordManager.Core;
+using PasswordManager.Blazor;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

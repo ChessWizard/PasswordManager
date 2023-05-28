@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Domain.Dtos
+namespace Core.Application.Dtos
 {
     public class GeneratePasswordDto
     {

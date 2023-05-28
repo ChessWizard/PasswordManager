@@ -1,4 +1,4 @@
-﻿namespace PasswordManager.Core.Constants
+﻿namespace PasswordManager.Blazor.Constants
 {
     public static class PasswordSecurityLength
     {
